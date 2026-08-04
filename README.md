@@ -1,8 +1,9 @@
 # Finanças Viana
 
-Web app de controle financeiro pessoal, acessível pelo navegador do celular na
-rede local (Wi-Fi de casa). Backend em FastAPI + SQLite, frontend em React com
-Recharts.
+PWA de controle financeiro pessoal que roda **inteiramente no navegador do
+celular** — sem backend, sem servidor, sem depender de nenhum computador
+ligado. Os dados ficam salvos localmente no aparelho (IndexedDB) e o app
+funciona offline depois de instalado.
 
 ## Funcionalidades
 
@@ -10,39 +11,55 @@ Recharts.
 - Cadastro de metas de economia com valor alvo, valor atual e prazo
 - Dashboard com gráficos de saldo ao longo do tempo, gastos por categoria e
   progresso das metas
+- Exportar/importar backup dos dados em um arquivo `.json`
+- Instalável como app na tela inicial (PWA), funciona offline
+
+## Como instalar no celular
+
+O app é publicado automaticamente no GitHub Pages a cada push. Não precisa de
+notebook, servidor ou rede local — só abrir o link uma vez para instalar.
+
+1. No celular, abra no navegador:
+
+   **https://mintkottoh-ui.github.io/Financa-viana-claude/**
+
+2. Instale na tela inicial:
+   - **Android (Chrome)**: menu (⋮) → "Adicionar à tela inicial" ou "Instalar
+     app"
+   - **iPhone (Safari)**: botão de compartilhar (□↑) → "Adicionar à Tela de
+     Início"
+3. Pronto — abra pelo ícone que apareceu na tela inicial. A partir daí o app
+   funciona offline, sem precisar de internet nem de qualquer computador.
+
+Depois de instalado, sempre que o app for atualizado (novo push no repositório)
+ele se atualiza sozinho na próxima vez que for aberto com internet.
+
+## Onde os dados ficam guardados
+
+Tudo roda no navegador do próprio celular: os dados (transações e metas) são
+salvos localmente via IndexedDB, não existe nenhum servidor ou banco de dados
+externo. Isso quer dizer:
+
+- **Não sincroniza** entre aparelhos automaticamente.
+- **Pode ser perdido** se você desinstalar o app, limpar os dados do
+  navegador, ou trocar de celular.
+
+Por isso o app tem uma aba **Backup**: use "Exportar backup" periodicamente
+para baixar um arquivo `.json` com tudo (salve no Google Drive, e-mail, etc.),
+e "Importar backup" para restaurar em outro aparelho ou depois de uma
+reinstalação.
 
 ## Estrutura do projeto
 
 ```
-backend/    API FastAPI + banco SQLite
-frontend/   App React (Vite)
+frontend/   App React (Vite) — PWA 100% client-side
+  src/db/          Camada de dados local (Dexie / IndexedDB)
+  src/pages/        Dashboard, Transações, Metas, Backup
+  src/components/   Formulários, listas e gráficos (Recharts)
+.github/workflows/  Deploy automático para o GitHub Pages
 ```
 
-## Requisitos
-
-- Python 3.10+
-- Node.js 18+
-
-## 1. Rodar o backend
-
-```bash
-cd backend
-python3 -m venv .venv
-source .venv/bin/activate        # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-uvicorn app.main:app --host 0.0.0.0 --port 8000
-```
-
-O banco de dados SQLite é criado automaticamente em `backend/data/financas.db`
-na primeira execução. A API fica disponível em `http://localhost:8000` e a
-documentação interativa em `http://localhost:8000/docs`.
-
-`--host 0.0.0.0` é o que permite que outros aparelhos na mesma rede (como o
-celular) acessem a API.
-
-## 2. Rodar o frontend
-
-Em outro terminal:
+## Rodando localmente (desenvolvimento)
 
 ```bash
 cd frontend
@@ -50,48 +67,28 @@ npm install
 npm run dev
 ```
 
-O Vite já está configurado (`vite.config.js`) para escutar em `0.0.0.0`, então
-ao rodar `npm run dev` ele mostra algo como:
+Abre em `http://localhost:5173`. Como não há backend, isso já é o app
+completo — os dados ficam no IndexedDB do navegador que você está usando.
 
+Para gerar o build de produção (o mesmo que o GitHub Actions publica):
+
+```bash
+npm run build
+npm run preview   # serve dist/ localmente para testar
 ```
-➜  Local:   http://localhost:5173/
-➜  Network: http://192.168.0.42:5173/
-```
 
-O frontend detecta automaticamente o endereço da API a partir do host usado
-para acessá-lo (mesmo IP, porta 8000) — não é preciso configurar nada extra
-para acessar pelo celular. Caso o backend rode em outra máquina, defina a
-variável `VITE_API_URL` (ex.: `VITE_API_URL=http://192.168.0.10:8000 npm run dev`).
+## Deploy (GitHub Pages)
 
-## 3. Acessar pelo celular
+O workflow `.github/workflows/deploy.yml` builda `frontend/` e publica em
+GitHub Pages a cada push nas branches `main` ou
+`claude/personal-finance-app-qzoegx`. Requisitos únicos (já configurados):
 
-1. Garanta que o celular está conectado à **mesma rede Wi-Fi** do computador.
-2. Descubra o IP local do computador:
-   - **Linux**: `hostname -I` ou `ip addr show`
-   - **macOS**: `ipconfig getifaddr en0` (ou o nome da sua interface de rede)
-   - **Windows**: `ipconfig` (procure "Endereço IPv4")
-3. No navegador do celular, acesse `http://<IP-DO-COMPUTADOR>:5173`
-   (por exemplo, `http://192.168.0.42:5173`).
+- Repositório público (Pages gratuito exige isso, a menos que você tenha
+  GitHub Pro/Team).
+- Em **Settings → Pages**, a fonte deve estar como "GitHub Actions" (o
+  workflow tenta configurar isso automaticamente no primeiro deploy).
 
-Se não carregar, verifique se o firewall do computador está bloqueando as
-portas 5173 (frontend) e 8000 (API) — libere-as para conexões da rede local.
-
-## API
-
-Todas as rotas ficam sob `/api`:
-
-| Recurso | Rotas |
-|---|---|
-| Transações | `GET/POST /api/transactions`, `GET/PATCH/DELETE /api/transactions/{id}` |
-| Metas | `GET/POST /api/goals`, `GET/PATCH/DELETE /api/goals/{id}`, `POST /api/goals/{id}/contribute` |
-| Dashboard | `GET /api/dashboard/balance`, `GET /api/dashboard/spending-by-category`, `GET /api/dashboard/summary` |
-
-Filtros disponíveis em `/api/transactions` e nas rotas de dashboard:
-`start_date`, `end_date`, `type`, `category` (parâmetros de query, formato de
-data `YYYY-MM-DD`).
-
-## Observações de segurança
-
-Este app foi pensado para uso pessoal dentro de uma rede local confiável (sem
-autenticação e com CORS liberado). Não exponha essas portas diretamente para a
-internet.
+Se quiser publicar em outro host estático (Netlify, Vercel, Cloudflare
+Pages), rode `npm run build` dentro de `frontend/` e suba a pasta `dist/` —
+é um site 100% estático, sem variáveis de ambiente nem backend para
+configurar.

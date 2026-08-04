@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api } from "../api/client";
+import { repository } from "../db/repository";
 import { GoalForm } from "../components/GoalForm";
 import { GoalList } from "../components/GoalList";
 
@@ -10,7 +10,7 @@ export function Goals() {
 
   async function load() {
     try {
-      const data = await api.listGoals();
+      const data = await repository.listGoals();
       setGoals(data);
     } catch (err) {
       setError(err.message);
@@ -26,7 +26,7 @@ export function Goals() {
   async function handleCreate(payload) {
     setError("");
     try {
-      await api.createGoal(payload);
+      await repository.createGoal(payload);
       await load();
     } catch (err) {
       setError(err.message);
@@ -36,7 +36,7 @@ export function Goals() {
   async function handleContribute(id, amount) {
     setError("");
     try {
-      await api.contributeToGoal(id, amount);
+      await repository.contributeToGoal(id, amount);
       await load();
     } catch (err) {
       setError(err.message);
@@ -46,7 +46,7 @@ export function Goals() {
   async function handleDelete(id) {
     setError("");
     try {
-      await api.deleteGoal(id);
+      await repository.deleteGoal(id);
       setGoals((prev) => prev.filter((g) => g.id !== id));
     } catch (err) {
       setError(err.message);

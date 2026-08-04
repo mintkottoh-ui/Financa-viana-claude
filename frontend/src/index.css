@@ -392,6 +392,22 @@ button {
   font-size: 0.9rem;
 }
 
+.success-banner {
+  background: var(--income);
+  color: white;
+  padding: 10px 14px;
+  border-radius: 10px;
+  margin-bottom: 16px;
+  font-size: 0.9rem;
+}
+
+.hint-text {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin: 0 0 12px;
+  line-height: 1.4;
+}
+
 .legend {
   display: flex;
   flex-wrap: wrap;

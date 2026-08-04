@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api } from "../api/client";
+import { repository } from "../db/repository";
 import { TransactionForm } from "../components/TransactionForm";
 import { TransactionList } from "../components/TransactionList";
 
@@ -10,7 +10,7 @@ export function Transactions() {
 
   async function load() {
     try {
-      const data = await api.listTransactions({ limit: 200 });
+      const data = await repository.listTransactions({ limit: 200 });
       setTransactions(data);
     } catch (err) {
       setError(err.message);
@@ -26,7 +26,7 @@ export function Transactions() {
   async function handleCreate(payload) {
     setError("");
     try {
-      await api.createTransaction(payload);
+      await repository.createTransaction(payload);
       await load();
     } catch (err) {
       setError(err.message);
@@ -36,7 +36,7 @@ export function Transactions() {
   async function handleDelete(id) {
     setError("");
     try {
-      await api.deleteTransaction(id);
+      await repository.deleteTransaction(id);
       setTransactions((prev) => prev.filter((t) => t.id !== id));
     } catch (err) {
       setError(err.message);

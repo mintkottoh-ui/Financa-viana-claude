@@ -13,6 +13,9 @@ export function NavBar() {
         <NavLink to="/metas" className={({ isActive }) => (isActive ? "active" : "")}>
           Metas
         </NavLink>
+        <NavLink to="/backup" className={({ isActive }) => (isActive ? "active" : "")}>
+          Backup
+        </NavLink>
       </nav>
     </header>
   );

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api } from "../api/client";
+import { repository } from "../db/repository";
 import { BalanceChart } from "../components/BalanceChart";
 import { CategoryPieChart } from "../components/CategoryPieChart";
 import { GoalProgressChart } from "../components/GoalProgressChart";
@@ -11,7 +11,7 @@ export function Dashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api
+    repository
       .getDashboardSummary()
       .then(setSummary)
       .catch((err) => setError(err.message))
